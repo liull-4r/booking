@@ -17,11 +17,11 @@ Route::middleware('auth:api')->prefix('auth')->group(function () {
 
 Route::middleware('auth:api')->prefix('rooms')->group(function () {
     Route::get('/', [RoomController::class, 'index']);
-    Route::get('/{room}', [RoomController::class, 'show']);
-    Route::post('/', [RoomController::class, 'store']);
-    Route::put('/{room}', [RoomController::class, 'update']);
-    Route::patch('/{room}', [RoomController::class, 'update']);
-    Route::delete('/{room}', [RoomController::class, 'destroy']);
+    Route::middleware('admin')->group(function () {
+        Route::post('/', [RoomController::class, 'store']);
+        Route::put('/{room}', [RoomController::class, 'update']);
+        Route::delete('/{room}', [RoomController::class, 'destroy']);
+    });
 });
 
 Route::middleware('auth:api')->prefix('reservations')->group(function () {
@@ -29,7 +29,8 @@ Route::middleware('auth:api')->prefix('reservations')->group(function () {
     Route::post('/', [ReservationController::class, 'store']);
 });
 
-Route::middleware('auth:api')->prefix('admin')->group(function () {
+Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
     Route::get('/reservations', [ReservationController::class, 'adminIndex']);
+    Route::get('/statistics', [ReservationController::class, 'statistics']);
 });
 

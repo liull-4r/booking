@@ -39,15 +39,6 @@ class RoomController extends Controller
     public function store(StoreRoomRequest $request)
     {
         try {
-            $user = auth('api')->user();
-
-            if ($user->role !== 'admin') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthorized. Only admins can create rooms.',
-                ], 403);
-            }
-
             $room = Room::create([
                 'room_number' => $request->room_number,
                 'beds' => $request->beds,
@@ -70,45 +61,9 @@ class RoomController extends Controller
         }
     }
 
-    public function show(Room $room)
-    {
-        try {
-            $user = auth('api')->user();
-
-            if ($user->role !== 'admin' && !$room->is_active) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Room not found or not available.',
-                ], 404);
-            }
-
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'room' => $room,
-                ],
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve room.',
-                'error' => config('app.debug') ? $e->getMessage() : null,
-            ], 500);
-        }
-    }
-
     public function update(UpdateRoomRequest $request, Room $room)
     {
         try {
-            $user = auth('api')->user();
-
-            if ($user->role !== 'admin') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthorized. Only admins can update rooms.',
-                ], 403);
-            }
-
             if ($request->has('room_number')) {
                 $room->room_number = $request->room_number;
             }
@@ -140,15 +95,6 @@ class RoomController extends Controller
     public function destroy(Room $room)
     {
         try {
-            $user = auth('api')->user();
-
-            if ($user->role !== 'admin') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthorized. Only admins can delete rooms.',
-                ], 403);
-            }
-
             $room->delete();
 
             return response()->json([

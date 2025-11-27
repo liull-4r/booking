@@ -28,6 +28,28 @@ export const reservationsService = api.injectEndpoints({
       query: () => "/admin/reservations",
       providesTags: ["Reservation"],
     }),
+
+    getStatistics: builder.query<
+      {
+        success: boolean;
+        data: {
+          daily_reservations: Array<{
+            date: string;
+            label: string;
+            count: number;
+          }>;
+          room_reservations: Array<{
+            room_id: number;
+            room_number: string;
+            count: number;
+          }>;
+        };
+      },
+      void
+    >({
+      query: () => "/admin/statistics",
+      providesTags: ["Reservation"],
+    }),
   }),
 });
 
@@ -35,4 +57,5 @@ export const {
   useGetReservationsQuery,
   useCreateReservationMutation,
   useGetAllReservationsQuery,
+  useGetStatisticsQuery,
 } = reservationsService;

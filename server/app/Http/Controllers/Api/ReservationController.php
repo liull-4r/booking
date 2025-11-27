@@ -174,15 +174,6 @@ class ReservationController extends Controller
     public function adminIndex(Request $request)
     {
         try {
-            $user = auth('api')->user();
-
-            if ($user->role !== 'admin') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthorized. Only admins can view all reservations.',
-                ], 403);
-            }
-
             $reservations = Reservation::with([
                 'room:id,room_number,beds,is_active',
                 'user:id,name,email,role'
@@ -244,6 +235,61 @@ class ReservationController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to retrieve reservations.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function statistics(Request $request)
+    {
+        try {
+            $sevenDaysAgo = Carbon::now()->subDays(7)->startOfDay();
+            $today = Carbon::now()->endOfDay();
+
+            $reservations = Reservation::whereBetween('created_at', [$sevenDaysAgo, $today])
+                ->get();
+
+            $dailyStats = [];
+            for ($i = 6; $i >= 0; $i--) {
+                $date = Carbon::now()->subDays($i)->startOfDay();
+                $dateKey = $date->format('Y-m-d');
+                $dateLabel = $date->format('M d');
+
+                $count = $reservations->filter(function ($reservation) use ($date) {
+                    return Carbon::parse($reservation->created_at)->isSameDay($date);
+                })->count();
+
+                $dailyStats[] = [
+                    'date' => $dateKey,
+                    'label' => $dateLabel,
+                    'count' => $count,
+                ];
+            }
+
+            $allReservations = Reservation::with('room:id,room_number')
+                ->get();
+
+            $roomStats = $allReservations->groupBy('room_id')->map(function ($roomReservations, $roomId) {
+                $firstReservation = $roomReservations->first();
+                $room = $firstReservation->room ?? null;
+                return [
+                    'room_id' => (int)$roomId,
+                    'room_number' => $room ? $room->room_number : 'Unknown',
+                    'count' => $roomReservations->count(),
+                ];
+            })->values()->sortByDesc('count')->take(10)->values();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'daily_reservations' => $dailyStats,
+                    'room_reservations' => $roomStats,
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve statistics.',
                 'error' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }

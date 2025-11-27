@@ -19,17 +19,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Prevent redirects for API routes - let exception handler return JSON
         $middleware->redirectGuestsTo(function (Request $request) {
-            // For API routes, return null to prevent redirect
-            // This allows the AuthenticationException handler to catch it
             if ($request->is('api/*')) {
                 return null;
             }
-            // For web routes, you can set a login route if needed
-            // return route('login');
             return null;
         });
+        
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Validation Exception Handler

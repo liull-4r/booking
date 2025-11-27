@@ -13,11 +13,6 @@ export const roomsService = api.injectEndpoints({
       providesTags: ["Room"],
     }),
 
-    getRoom: builder.query<RoomResponse, number>({
-      query: (id) => `/rooms/${id}`,
-      providesTags: (result, error, id) => [{ type: "Room", id }],
-    }),
-
     createRoom: builder.mutation<RoomResponse, CreateRoomData>({
       query: (data) => ({
         url: "/rooms",
@@ -56,7 +51,6 @@ export const roomsService = api.injectEndpoints({
 
 export const {
   useGetRoomsQuery,
-  useGetRoomQuery,
   useCreateRoomMutation,
   useUpdateRoomMutation,
   useDeleteRoomMutation,

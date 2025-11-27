@@ -135,14 +135,18 @@ function RoomsPageContent() {
               No rooms found
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Get started by creating your first room
+              {isAdmin
+                ? "Get started by creating your first room"
+                : "No rooms are currently available for booking"}
             </p>
-            <button
-              onClick={() => handleOpenModal()}
-              className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold cursor-pointer"
-            >
-              Create First Room
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => handleOpenModal()}
+                className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold cursor-pointer"
+              >
+                Create First Room
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
